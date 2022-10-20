@@ -41,14 +41,14 @@ The token provided by the browser.
 
 ##### options: TurnstileOptions
 An optional object containing options for the request.
-- `secret`?: The secret key used to generate the token. If not provided, the secret key provided to the `Turnstile` function will be used.
-- `apiUrl`?: The URL of the Cloudflare Turnstile API. Defaults to `https://challenges.cloudflare.com/turnstile/v0/siteverify`.
-- `hostname`?: The hostname to expect. The validation will fail if this is provided and does not match the value returned by Cloudflare.
-- `remoteip`?: The remote user's IP address. This will be sent to Cloudflare.
-- `action`?: The action to expect. The validation will fail if this is provided and does not match the value returned by Cloudflare.
-- `cdata`?: The challenge data (`cData`) to expect. The validation will fail if this is provided and does not match the value returned by Cloudflare.
-- `debug`?: Enables debug mode. Logs to console what data is sent to and received from Cloudflare.
-- `throwOnFailure`?: If set to `true`, the promise will be rejected if the validation fails. Defaults to `false`.
+- `secret`? (`string`): The secret key used to generate the token. If not provided, the secret key provided to the `Turnstile` function will be used. Overrides the default secret key that was provided to the `Turnstile` function.
+- `apiUrl`? (`string`): The URL of the Cloudflare Turnstile API. Defaults to `https://challenges.cloudflare.com/turnstile/v0/siteverify`.
+- `hostname`? (`string`): The hostname to expect. The validation will fail if this is provided and does not match the value returned by Cloudflare.
+- `remoteip`? (`string`): The remote user's IP address. This will be sent to Cloudflare.
+- `action`? (`string`): The action to expect. The validation will fail if this is provided and does not match the value returned by Cloudflare.
+- `cdata`? (`string`): The challenge data (`cData`) to expect. The validation will fail if this is provided and does not match the value returned by Cloudflare.
+- `debug`? (`string`): Enables debug mode. Logs to console what data is sent to and received from Cloudflare.
+- `throwOnFailure`? (`boolean`): If set to `true`, the promise will be rejected if the validation fails. Defaults to `false`.
 
 #### Returns
 A promise that resolves to a `TurnstileResult` object.

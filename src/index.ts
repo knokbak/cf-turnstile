@@ -138,7 +138,7 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
 };
 
 function validateReceivedParam(expected?: string | string[], received?: string) {
-    return expected && (
+    return !expected || (
         (typeof expected === 'string' && received === expected) ||
         (Array.isArray(expected) && expected.includes(received ?? ''))
     );

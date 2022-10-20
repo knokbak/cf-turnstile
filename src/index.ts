@@ -109,7 +109,10 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
         const action = options?.action;
         const cdata = options?.cdata;
 
-        if (!receivedParamsValidate(hostname, data.hostname)) {
+        if (hostname && (
+            (typeof hostname === 'string' && data.hostname === hostname) &&
+            (Array.isArray(hostname) && hostname.includes(data.hostname ?? ''))
+        )) {
             data.success = false;
             data.errors.push('cfts-hostname-mismatch');
             if (options.throwOnFailure) {
@@ -117,7 +120,10 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
             }
         }
         
-        if (!receivedParamsValidate(action, data.action)) {
+        if (action && (
+            (typeof action === 'string' && data.action !== action) &&
+            (Array.isArray(action) && !action.includes(data.action ?? ''))
+        )) {
             data.success = false;
             data.errors.push('cfts-action-mismatch');
             if (options.throwOnFailure) {
@@ -125,7 +131,10 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
             }
         }
 
-        if (!receivedParamsValidate(cdata, data.cdata)) {
+        if (cdata && (
+            (typeof cdata === 'string' && data.cdata !== cdata) &&
+            (Array.isArray(cdata) && !cdata.includes(data.cdata ?? ''))
+        )) {
             data.success = false;
             data.errors.push('cfts-cdata-mismatch');
             if (options.throwOnFailure) {
@@ -136,13 +145,6 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
         return data;
     };
 };
-
-function receivedParamsValidate(expecting?: string | string[], received?: string) {
-    return !(expecting && (
-        !(typeof expecting === 'string' && received !== expecting) &&
-        !(Array.isArray(expecting) && !expecting.includes(received ?? ''))
-    ))
-}
 
 function sendRequest(url: string, options: RequestInit): Promise<any> {
     try {

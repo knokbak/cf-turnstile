@@ -17,6 +17,7 @@ type TurnstileOptions = {
     remoteip?: string;
     action?: string;
     cdata?: string;
+    debug?: boolean;
 };
 
 type TurnstileResponse = {
@@ -41,6 +42,7 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
             remoteip: options?.remoteip ?? globalOptions?.remoteip,
             action: options?.action ?? globalOptions?.action,
             cdata: options?.cdata ?? globalOptions?.cdata,
+            debug: options?.debug ?? globalOptions?.debug ?? false,
         };
         
         if (!options.secret || typeof options.secret !== 'string') {
@@ -59,13 +61,14 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
             formData.append('remoteip', remoteip);
         }
 
+        if (options.debug) {
+            console.log('cf-turnstile: sending request to', options.apiUrl);
+            console.log('cf-turnstile: using form data:', formData);
+        }
+
         const data = await sendRequest(options?.apiUrl ?? DEFAULT_API_URL, {
             method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/www-x-form-urlencoded',
-            },
-            body: formData.toString(),
+            body: formData,
         }).then(x => x.json());
 
         if (data['error-codes'] && data['error-codes'].length > 0) {

@@ -28,7 +28,7 @@ type TurnstileResponse = {
     cdata?: string;
 };
 
-function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: string) => Promise<TurnstileResponse> {
+function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: string, options?: TurnstileOptions) => Promise<TurnstileResponse> {
     if (secret && typeof secret !== 'string') {
         throw new TypeError('secret must be a string or undefined');
     }

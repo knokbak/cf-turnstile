@@ -11,6 +11,7 @@
 const DEFAULT_API_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 type TurnstileOptions = {
+    secret?: string;
     apiUrl?: string;
     hostname?: string;
     remoteip?: string;
@@ -27,18 +28,30 @@ type TurnstileResponse = {
     cdata?: string;
 };
 
-function turnstile(secret: string, globalOptions?: TurnstileOptions): (token: string) => Promise<TurnstileResponse> {
+function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: string) => Promise<TurnstileResponse> {
+    if (secret && typeof secret !== 'string') {
+        throw new TypeError('secret must be a string or undefined');
+    }
+
     return async (token: string, options?: TurnstileOptions): Promise<TurnstileResponse> => {
         options = {
+            secret: options?.secret ?? globalOptions?.secret ?? secret,
             apiUrl: options?.apiUrl ?? globalOptions?.apiUrl ?? DEFAULT_API_URL,
             hostname: options?.hostname ?? globalOptions?.hostname,
             remoteip: options?.remoteip ?? globalOptions?.remoteip,
             action: options?.action ?? globalOptions?.action,
             cdata: options?.cdata ?? globalOptions?.cdata,
         };
-
+        
+        if (!options.secret || typeof options.secret !== 'string') {
+            throw new Error('options.secret is required (when a secret is not provided globally) and must be a string');
+        }
+        if (!token || typeof token !== 'string') {
+            throw new Error('token is required and must be a string');
+        }
+        
         const formData = new URLSearchParams();
-        formData.append('secret', secret);
+        formData.append('secret', options.secret);
         formData.append('response', token);
 
         const remoteip = options?.remoteip;

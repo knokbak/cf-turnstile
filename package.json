@@ -1,0 +1,26 @@
+{
+  "name": "cf-turnstile",
+  "version": "1.0.0-pre.1",
+  "description": "A very simple wrapper for Cloudflare Turnstile written in TypeScript.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knokbak/cf-turnstile.git"
+  },
+  "author": "knokbak",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/knokbak/cf-turnstile/issues"
+  },
+  "homepage": "https://github.com/knokbak/cf-turnstile#readme",
+  "devDependencies": {
+    "@types/node": "^18.11.3",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

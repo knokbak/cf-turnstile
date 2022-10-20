@@ -18,6 +18,7 @@ type TurnstileOptions = {
     action?: string;
     cdata?: string;
     debug?: boolean;
+    throwOnFailure?: boolean;
 };
 
 type TurnstileResponse = {
@@ -43,6 +44,7 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
             action: options?.action ?? globalOptions?.action,
             cdata: options?.cdata ?? globalOptions?.cdata,
             debug: options?.debug ?? globalOptions?.debug ?? false,
+            throwOnFailure: options?.throwOnFailure ?? globalOptions?.throwOnFailure ?? false,
         };
         
         if (!options.secret || typeof options.secret !== 'string') {
@@ -72,11 +74,17 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
         }).then(x => x.json());
 
         if (data['error-codes'] && data['error-codes'].length > 0) {
-            throw new Error(`We ran into one or more errors whilst verifying Cloudflare Turnstile token: ${data['error-codes'].join(', ')}`);
+            if (options.throwOnFailure) {
+                throw new Error(`cf-turnstile: Cloudflare returned one or more error codes: ${data['error-codes'].join(', ')}`);
+            }
+            return data;
         }
 
         if (!data.success) {
-            throw new Error('Cloudflare Turnstile token verification failed; the provided token is invalid.');
+            if (options.throwOnFailure) {
+                throw new Error(`cf-turnstile: Cloudflare could not verify the token`);
+            }
+            return data;
         }
 
         const hostname = options?.hostname;
@@ -84,13 +92,25 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
         const cdata = options?.cdata;
 
         if (hostname && data.hostname !== hostname) {
-            throw new Error(`Cloudflare Turnstile token verification failed; the provided token is not valid for hostname ${hostname}. The token is valid for hostname ${data.hostname}.`);
+            data.success = false;
+            data.errors.push('cfts-hostname-mismatch');
+            if (options.throwOnFailure) {
+                throw new Error(`cf-turnstile: hostname mismatch: expected ${hostname}, got ${data.hostname}`);
+            }
         }
         if (action && data.action !== action) {
-            throw new Error(`Cloudflare Turnstile token verification failed; the provided token is not valid for action ${action}. The token is valid for action ${data.action}.`);
+            data.success = false;
+            data.errors.push('cfts-action-mismatch');
+            if (options.throwOnFailure) {
+                throw new Error(`cf-turnstile: action mismatch: expected ${action}, got ${data.action}`);
+            }
         }
         if (cdata && data.cdata !== cdata) {
-            throw new Error(`Cloudflare Turnstile token verification failed; the provided token is not valid for cdata ${cdata}. The token is valid for cdata ${data.cdata}.`);
+            data.success = false;
+            data.errors.push('cfts-cdata-mismatch');
+            if (options.throwOnFailure) {
+                throw new Error(`cf-turnstile: cdata mismatch: expected ${cdata}, got ${data.cdata}`);
+            }
         }
 
         return data;

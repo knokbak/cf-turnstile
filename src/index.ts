@@ -23,9 +23,9 @@ type TurnstileOptions = {
 
 type TurnstileResponse = {
     success: boolean;
-    challenge_ts: string;
+    timestamp?: Date;
     hostname?: string;
-    'error-codes'?: string[];
+    errors: string[];
     action?: string;
     cdata?: string;
 };
@@ -68,14 +68,32 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
             console.log('cf-turnstile: using form data:', formData);
         }
 
-        const data = await sendRequest(options?.apiUrl ?? DEFAULT_API_URL, {
+        const received = await sendRequest(options?.apiUrl ?? DEFAULT_API_URL, {
             method: 'POST',
             body: formData,
-        }).then(x => x.json());
+        }).then(x => x.json()) as {
+            success?: boolean;
+            challenge_ts?: string;
+            hostname?: string;
+            'error-codes'?: string[];
+            action?: string;
+            cdata?: string;
+        };
 
-        if (data['error-codes'] && data['error-codes'].length > 0) {
+        const data: TurnstileResponse = {
+            success: received.success ?? false,
+            timestamp: received.challenge_ts ? new Date(received.challenge_ts) : undefined,
+            hostname: received.hostname,
+            errors: received['error-codes'] ?? [],
+            action: received.action,
+            cdata: received.cdata,
+        };
+
+        data.errors = received['error-codes'] ?? [];
+
+        if (data.errors.length > 0) {
             if (options.throwOnFailure) {
-                throw new Error(`cf-turnstile: Cloudflare returned one or more error codes: ${data['error-codes'].join(', ')}`);
+                throw new Error(`cf-turnstile: Cloudflare returned one or more error codes: ${data.errors.join(', ')}`);
             }
             return data;
         }

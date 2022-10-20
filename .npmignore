@@ -1,6 +1,5 @@
 .vscode/
 node_modules/
 src/
-README.md
 .gitignore
 tsconfig.json

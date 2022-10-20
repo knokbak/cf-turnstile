@@ -13,10 +13,10 @@ const DEFAULT_API_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteveri
 type TurnstileOptions = {
     secret?: string;
     apiUrl?: string;
-    hostname?: string;
+    hostname?: string | string[];
     remoteip?: string;
-    action?: string;
-    cdata?: string;
+    action?: string | string[];
+    cdata?: string | string[];
     debug?: boolean;
     throwOnFailure?: boolean;
 };
@@ -109,21 +109,32 @@ function turnstile(secret?: string, globalOptions?: TurnstileOptions): (token: s
         const action = options?.action;
         const cdata = options?.cdata;
 
-        if (hostname && data.hostname !== hostname) {
+        if (hostname && (
+            !(typeof hostname === 'string' && data.hostname === hostname) &&
+            !(Array.isArray(hostname) && hostname.includes(data.hostname ?? ''))
+        )) {
             data.success = false;
             data.errors.push('cfts-hostname-mismatch');
             if (options.throwOnFailure) {
                 throw new Error(`cf-turnstile: hostname mismatch: expected ${hostname}, got ${data.hostname}`);
             }
         }
-        if (action && data.action !== action) {
+        
+        if (action && (
+            !(typeof action === 'string' && data.action !== action) &&
+            !(Array.isArray(action) && !action.includes(data.action ?? ''))
+        )) {
             data.success = false;
             data.errors.push('cfts-action-mismatch');
             if (options.throwOnFailure) {
                 throw new Error(`cf-turnstile: action mismatch: expected ${action}, got ${data.action}`);
             }
         }
-        if (cdata && data.cdata !== cdata) {
+
+        if (cdata && (
+            !(typeof cdata === 'string' && data.cdata !== cdata) &&
+            !(Array.isArray(cdata) && !cdata.includes(data.cdata ?? ''))
+        )) {
             data.success = false;
             data.errors.push('cfts-cdata-mismatch');
             if (options.throwOnFailure) {
